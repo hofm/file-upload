@@ -1,13 +1,19 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "../ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 import { Button } from "../ui/button";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { useCallback, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, Upload } from "lucide-react";
 
 export function Uploader() {
   const [files, setFiles] = useState<
@@ -185,11 +191,11 @@ export function Uploader() {
       );
 
       if (toomanyFiles) {
-        toast.error("Too many files selected, max is 5");
+        toast.error("Zu viele Dateien ausgewählt, maximal 50 erlaubt");
       }
 
       if (fileSizetoBig) {
-        toast.error("File size exceeds 5mb limit");
+        toast.error("Dateigröße überschreitet das 100MB-Limit");
       }
     }
   }, []);
@@ -197,8 +203,8 @@ export function Uploader() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     onDropRejected: rejectedFiles,
-    maxFiles: 5,
-    maxSize: 1024 * 1024 * 10, // 10mb
+    maxFiles: 50,
+    maxSize: 1024 * 1024 * 100,
     accept: {
       "image/*": [],
     },
@@ -216,85 +222,108 @@ export function Uploader() {
   }, [files]);
 
   return (
-    <>
-      <Card
-        {...getRootProps()}
-        className={cn(
-          "relative border-2 border-dashed transition-colors duration-200 ease-in-out w-full h-64",
-          isDragActive
-            ? "border-primary bg-primary/10 border-solid"
-            : "border-border hover:border-primary"
-        )}
-      >
-        <CardContent className="flex items-center justify-center h-full w-full">
+    <Card>
+      <CardHeader>
+        <CardTitle>Dateien hochladen</CardTitle>
+        <CardDescription>
+          Ziehe Bilder hierher oder klicke, um Dateien auszuwählen
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div
+          {...getRootProps()}
+          className={cn(
+            "relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 sm:p-12 transition-colors",
+            isDragActive
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 hover:border-primary/50 hover:bg-accent/50"
+          )}
+        >
           <input {...getInputProps()} />
-          {isDragActive ? (
-            <p className="text-center">Drop the files here ...</p>
-          ) : (
-            <div className="flex flex-col items-center gap-y-3">
-              <p>Drag 'n' drop some files here, or click to select files</p>
-              <Button>Select Files</Button>
+          <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
+            <div
+              className={cn(
+                "rounded-full bg-muted p-3 sm:p-4",
+                isDragActive && "bg-primary/10"
+              )}
+            >
+              <Upload
+                className={cn(
+                  "size-6 sm:size-8",
+                  isDragActive ? "text-primary" : "text-muted-foreground"
+                )}
+              />
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {files.length > 0 && (
-        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
-          {files.map(
-            ({
-              id,
-              file,
-              uploading,
-              progress,
-              isDeleting,
-              error,
-              objectUrl,
-            }) => {
-              return (
-                <div key={id} className="flex flex-col gap-1">
-                  <div className="relative aspect-square rounded-lg overflow-hidden">
-                    <img
-                      src={objectUrl}
-                      alt={file.name}
-                      className="w-full h-full object-cover"
-                    />
-
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
-                      onClick={() => removeFile(id)}
-                      disabled={isDeleting}
-                    >
-                      {isDeleting ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="w-4 h-4" />
-                      )}
-                    </Button>
-                    {uploading && !isDeleting && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <div className="text-white font-medium text-lg">
-                          {progress}%
-                        </div>
-                      </div>
-                    )}
-                    {error && (
-                      <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
-                        <div className="text-white font-medium">Error</div>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground truncate px-1">
-                    {file.name}
-                  </p>
-                </div>
-              );
-            }
-          )}
+            <div className="space-y-1 px-4">
+              <p className="text-xs sm:text-sm font-medium">
+                {isDragActive
+                  ? "Dateien hier ablegen"
+                  : "Dateien hier ablegen oder klicken zum Auswählen"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Bilder bis zu 100MB
+              </p>
+            </div>
+          </div>
         </div>
-      )}
-    </>
+
+        {files.length > 0 && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+            {files.map(
+              ({
+                id,
+                file,
+                uploading,
+                progress,
+                isDeleting,
+                error,
+                objectUrl,
+              }) => {
+                return (
+                  <div key={id} className="flex flex-col gap-1">
+                    <div className="relative aspect-square rounded-lg overflow-hidden">
+                      <img
+                        src={objectUrl}
+                        alt={file.name}
+                        className="w-full h-full object-cover"
+                      />
+
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2"
+                        onClick={() => removeFile(id)}
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </Button>
+                      {uploading && !isDeleting && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <div className="text-white font-medium text-lg">
+                            {progress}%
+                          </div>
+                        </div>
+                      )}
+                      {error && (
+                        <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
+                          <div className="text-white font-medium">Error</div>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate px-1">
+                      {file.name}
+                    </p>
+                  </div>
+                );
+              }
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

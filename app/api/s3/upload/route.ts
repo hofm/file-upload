@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     });
 
     const presignedUrl = await getSignedUrl(S3, command, {
-      expiresIn: 360, // URL expires in 6 minutes
+      expiresIn: 3600,
     });
 
     const response = {
