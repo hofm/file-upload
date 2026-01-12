@@ -13,7 +13,7 @@ import { FileRejection, useDropzone } from "react-dropzone";
 import { useCallback, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
-import { Loader2, Trash2, Upload } from "lucide-react";
+import { Loader2, Trash2, Upload, FileImage } from "lucide-react";
 
 export function Uploader() {
   const [files, setFiles] = useState<
@@ -255,20 +255,30 @@ export function Uploader() {
               />
             </div>
             <div className="space-y-1 px-4">
-              <p className="text-xs sm:text-sm font-medium">
-                {isDragActive
-                  ? "Dateien hier ablegen"
-                  : "Dateien hier ablegen oder klicken zum Auswählen"}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Bilder bis zu 100MB
-              </p>
+              {isDragActive ? (
+                <p className="text-sm sm:text-base font-medium">
+                  Dateien hier ablegen
+                </p>
+              ) : (
+                <>
+                  <p className="text-sm sm:text-base font-medium">
+                    Bilder hier hochladen
+                  </p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    oder,{" "}
+                    <span className="font-medium text-foreground">
+                      klicken zum Durchsuchen
+                    </span>{" "}
+                    (100MB max)
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
 
         {files.length > 0 && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+          <div className="space-y-3">
             {files.map(
               ({
                 id,
@@ -280,43 +290,71 @@ export function Uploader() {
                 objectUrl,
               }) => {
                 return (
-                  <div key={id} className="flex flex-col gap-1">
-                    <div className="relative aspect-square rounded-lg overflow-hidden">
-                      <img
-                        src={objectUrl}
-                        alt={file.name}
-                        className="w-full h-full object-cover"
-                      />
-
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2"
-                        onClick={() => removeFile(id)}
-                        disabled={isDeleting}
-                      >
-                        {isDeleting ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </Button>
-                      {uploading && !isDeleting && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <div className="text-white font-medium text-lg">
-                            {progress}%
-                          </div>
-                        </div>
-                      )}
-                      {error && (
-                        <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
-                          <div className="text-white font-medium">Error</div>
-                        </div>
+                  <div
+                    key={id}
+                    className="flex items-center gap-3 rounded-lg border bg-card p-3"
+                  >
+                    {/* Thumbnail */}
+                    <div className="relative shrink-0 w-16 h-16 rounded-md overflow-hidden bg-muted">
+                      {objectUrl ? (
+                        <img
+                          src={objectUrl}
+                          alt={file.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <FileImage className="w-full h-full p-4 text-muted-foreground" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground truncate px-1">
-                      {file.name}
-                    </p>
+
+                    {/* File Info */}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-medium truncate">
+                          {file.name}
+                        </p>
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </span>
+                      </div>
+
+                      {/* Progress Bar */}
+                      {(uploading || progress > 0) && !error && (
+                        <div className="space-y-1">
+                          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary transition-all duration-300"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {progress}%
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Error State */}
+                      {error && (
+                        <p className="text-xs text-destructive">
+                          Upload fehlgeschlagen
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Delete Button */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeFile(id)}
+                      disabled={isDeleting}
+                      className="shrink-0"
+                    >
+                      {isDeleting ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </Button>
                   </div>
                 );
               }
