@@ -1,4 +1,4 @@
-import { Uploader } from "@/components/web/Uploader";
+import { Uploader } from "@/file-uploader/components/Uploader";
 
 export default function Home() {
   return (

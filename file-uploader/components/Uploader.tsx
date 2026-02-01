@@ -7,8 +7,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
-import { Button } from "../ui/button";
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { useCallback, useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -42,7 +42,7 @@ export function Uploader() {
         prevFiles.map((f) => (f.id === fileId ? { ...f, isDeleting: true } : f))
       );
 
-      const response = await fetch("/api/s3/delete", {
+      const response = await fetch("/api/file-uploader", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: fileToRemove?.key }),
@@ -77,7 +77,7 @@ export function Uploader() {
 
     try {
       // 1. Get presigned URL
-      const presignedResponse = await fetch("/api/s3/upload", {
+      const presignedResponse = await fetch("/api/file-uploader", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
